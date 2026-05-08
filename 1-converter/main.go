@@ -8,32 +8,64 @@ const (
 )
 
 func main() {
-	amount := readInput("Введите сумму: ")
+	fmt.Println("=== Конвертер валют (USD, EUR, RUB) ===")
 
-	from := readCurrency("Из какой валюты (USD/EUR): ")
-	to := readCurrency("В какую валюту (EUR/RUB): ")
-
+	from := readCurrency("Введите исходную валюту (USD/EUR/RUB): ")
+	amount := readAmount("Введите сумму: ")
+	to := readCurrency("Введите целевую валюту (USD/EUR/RUB): ")
 	result := convert(amount, from, to)
-	fmt.Printf("Результат конвертации (заглушка): %.2f\n", result)
 
-	eurToRub := (1 / usdToEur) * usdToRub
-	fmt.Printf("На основе констант: 1 EUR = %.2f RUB\n", eurToRub)
-}
-
-func readInput(prompt string) float64 {
-	var value float64
-	fmt.Print(prompt)
-	fmt.Scan(&value)
-	return value
+	fmt.Printf("%.2f %s = %.2f %s\n", amount, from, result, to)
 }
 
 func readCurrency(prompt string) string {
-	var currency string
-	fmt.Print(prompt)
-	fmt.Scan(&currency)
-	return currency
+	var cur string
+	for {
+		fmt.Print(prompt)
+		fmt.Scan(&cur)
+		if isValidCurrency(cur) {
+			return cur
+		}
+		fmt.Println("Ошибка: допустимые валюты - USD, EUR, RUB. Попробуйте снова.")
+	}
 }
 
 func convert(amount float64, from, to string) float64 {
+	var inUSD float64
+	switch from {
+	case "USD":
+		inUSD = amount
+	case "EUR":
+		inUSD = amount / usdToEur
+	case "RUB":
+		inUSD = amount / usdToRub
+	}
+
+	switch to {
+	case "USD":
+		return inUSD
+	case "EUR":
+		return inUSD * usdToEur
+	case "RUB":
+		return inUSD * usdToRub
+	}
 	return 0
+}
+
+func readAmount(prompt string) float64 {
+	var amount float64
+	for {
+		fmt.Print(prompt)
+		_, err := fmt.Scan(&amount)
+		if err == nil && amount > 0 {
+			return amount
+		}
+		fmt.Println("Ошибка: введите положительное число. Попробуйте снова.")
+		var discard string
+		fmt.Scan(&discard)
+	}
+}
+
+func isValidCurrency(currency string) bool {
+	return currency == "USD" || currency == "EUR" || currency == "RUB"
 }
